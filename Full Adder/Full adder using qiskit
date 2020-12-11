@@ -1,0 +1,69 @@
+
+from qiskit import *
+from qiskit.tools.visualization import plot_bloch_multivector
+from qiskit.tools.visualization import plot_histogram
+
+# For understanding full adder truth table see below
+
+#Inputs: q0 = A ; q1 = B ; q2= CarryIn
+
+#Outputs: q0 = A ; q1 = B ; q2= SumOut ; q3 = CarryOut
+#
+#
+#.	q3	q2	q1	q0	.	q3	q2	q1	q0
+#.	.	Ci	B	A	.	Co	S	B	A
+#.	.	.	.	.	.	.	.	.	.
+#T1	0	0	0	0	-	0	0	0	0
+#T2	0	1	0	0	-	0	1	0	0
+#T3	0	0	1	0	-	0	1	1	0
+#T4	0	1	1	0	-	1	0	1	0
+#T5	0	0	0	1	-	0	1	0	1
+#T6	0	1	0	1	-	1	0	0	1
+#T7	0	0	1	1	-	1	0	1	1
+#T8	0	1	1	1	-	1	1	1	1
+
+
+
+
+# Creating a circuit with 8 quantum bits and 2 classical bits
+qc = QuantumCircuit(8,2)
+
+# Preparing inputs
+qc.x(0) # Comment this line to make Qbit0 = |0>
+qc.x(1) # Comment this line to make Qbit1 = |0>
+qc.x(2) # Comment this line to make Qbit2 = |0> ( carry-in bit )
+qc.barrier()
+
+# AND gate1 implementation
+qc.ccx(0,1,3)
+qc.barrier()
+
+# OR gate1 implementation
+qc.cx(0,4) 
+qc.cx(1,4)
+qc.barrier()
+
+# OR gate2 implementation
+qc.cx(2,5) 
+qc.cx(4,5)
+qc.barrier()
+
+# AND gate2 implementation
+qc.ccx(2,4,6)
+qc.barrier()
+
+# OR gate implementation
+qc.x(3)
+qc.x(6)
+qc.ccx(3,6,7)
+qc.x(7)
+qc.barrier()
+
+# Measuring and put result to classical bit
+qc.measure(5,0) # ( sum )
+qc.measure(7,1) # ( carry-out )
+qc.draw(output='mpl')
+
+# Run the experimient 1024 times and get stats
+counts = execute(qc,Aer.get_backend('qasm_simulator')).result().get_counts()
+print(counts)
